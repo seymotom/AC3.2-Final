@@ -17,6 +17,8 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
     @IBOutlet weak var commentTextView: UITextView!
     @IBOutlet weak var uploadImageView: UIImageView!
     
+    @IBOutlet weak var scrollView: UIScrollView!
+    @IBOutlet weak var scrollViewBottomConstraint: NSLayoutConstraint!
     
     var databaseReference: FIRDatabaseReference!
     
@@ -26,6 +28,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
         super.viewDidLoad()
         self.databaseReference = FIRDatabase.database().reference().child("posts")
         setTextView()
+        registerForKeyboardNotifications()
     }
     
     
@@ -51,6 +54,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
             textView.text = "Add a description..."
             textView.textColor = UIColor.lightGray
         }
+        view.endEditing(true)
     }
     
     
@@ -126,6 +130,40 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
         alert.addAction(okayAction)
         self.present(alert, animated: true, completion: nil)
     }
-
+    
+    
+    
+    // MARK : KEYBOARD NOTIFICATION
+    
+    // this isn't working as well as I'd like but I ran out of time.
+    
+    private func registerForKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: .UIKeyboardWillShow, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: .UIKeyboardWillHide, object: nil)
+    }
+    
+    func keyboardWillShow(_ notification: Notification) {
+        if let info = notification.userInfo,
+            let sizeString = info[UIKeyboardFrameBeginUserInfoKey] as? NSValue {
+            
+            let keyboardSize = sizeString.cgRectValue
+            let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
+            
+            scrollView.contentInset = contentInsets
+            scrollView.scrollIndicatorInsets = contentInsets
+            var rect = self.view.frame
+            rect.size.height -= keyboardSize.height
+            if !rect.contains(commentTextView.frame.origin) {
+                scrollView.scrollRectToVisible(commentTextView.frame, animated: true)
+            }
+            
+        }
+    }
+    
+    func keyboardWillHide(_ notification: Notification) {
+        scrollView.contentInset = .zero;
+        scrollView.scrollIndicatorInsets = .zero;
+    }
     
 }
