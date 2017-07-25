@@ -76,6 +76,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
             let postRef = self.databaseReference.childByAutoId()
             let storageReference: FIRStorageReference = FIRStorage.storage().reference(forURL: "gs://ac-32-final.appspot.com/")
             let spaceRef = storageReference.child("images/\(postRef.key)")
+            
             let metadata = FIRStorageMetadata()
             metadata.cacheControl = "public,max-age=300"
             metadata.contentType = "image/jpeg"
